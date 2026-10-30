@@ -1,4 +1,5 @@
 -- Run this script in Supabase SQL Editor before enabling GitHub Pages.
+-- Then run supabase-public-forum.sql to enable public reading and visitor posts.
 -- For each teammate, add their lower-case email to team_members and invite that
 -- same existing user from Authentication > Users. Public sign-ups stay disabled.
 -- Example after running this script:
@@ -115,6 +116,3 @@ begin
     end if;
 end
 $$;
-/*insert into public.team_members (email)
-values (lower('correo-del-companero@example.com'));
-En Authentication → Users, invita esos mismos correos.*/

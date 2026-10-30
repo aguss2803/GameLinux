@@ -95,7 +95,7 @@
                     Trabajo Práctico: Explorando el Mundo de Linux
                 </h2>
                 <p class="text-gray-400 text-sm mt-2">
-                    Comparte aportes y capturas con tu equipo. Inicia sesión para ver y guardar el informe compartido.
+                    Mural público: comparte tu experiencia sobre Linux. Los aportes y capturas del grupo también son visibles para todos.
                 </p>
                 <p id="report-save-status" class="text-xs font-mono text-gray-500 mt-3" role="status" aria-live="polite">Conectando al espacio compartido...</p>
             </div>
@@ -117,6 +117,37 @@
                 </div>
             </div>
 
+            <section id="public-forum-panel" class="mx-auto mb-8 max-w-3xl rounded-2xl border border-term-cyan/30 bg-term-card p-6">
+                <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-comments mr-2 text-term-cyan"></i>Foro público</h3>
+                <p class="mt-2 text-sm text-gray-400">Comparte una experiencia o aporte sobre Linux sin crear una cuenta. Tu publicación y los trabajos del grupo serán visibles públicamente. No incluyas datos personales ni contenido sensible.</p>
+                <form id="public-post-form" class="mt-5 space-y-3">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="public-post-author" class="mb-1 block text-xs font-semibold text-gray-300">Nombre o apodo</label>
+                            <input id="public-post-author" type="text" required maxlength="60" autocomplete="nickname" class="w-full rounded-lg border border-term-border bg-term-bg px-3 py-2 text-sm text-white outline-none focus:border-brand-500" placeholder="¿Cómo te llamamos?">
+                        </div>
+                        <div>
+                            <label for="public-post-consigna" class="mb-1 block text-xs font-semibold text-gray-300">Tema del aporte</label>
+                            <select id="public-post-consigna" class="w-full rounded-lg border border-term-border bg-term-bg px-3 py-2 text-sm text-white outline-none focus:border-brand-500">
+                                <option value="1">Entorno de trabajo Ubuntu</option>
+                                <option value="2">Hardware y sistemas operativos</option>
+                                <option value="3">Personalización</option>
+                                <option value="4">Software libre e IA</option>
+                                <option value="5">Conclusiones y experiencias</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="public-post-body" class="mb-1 block text-xs font-semibold text-gray-300">Tu experiencia o aporte</label>
+                        <textarea id="public-post-body" required minlength="3" maxlength="2000" rows="4" class="w-full resize-y rounded-lg border border-term-border bg-term-bg px-3 py-2 text-sm text-white outline-none focus:border-brand-500" placeholder="Comparte lo que aprendiste sobre Linux..."></textarea>
+                    </div>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p id="public-post-status" class="text-xs text-gray-400" role="status" aria-live="polite"></p>
+                        <button id="public-post-submit" type="submit" class="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-500">Publicar aporte</button>
+                    </div>
+                </form>
+            </section>
+
             <div id="report-content" class="hidden space-y-6">
                 <!-- PARTE 1 -->
                 <div class="bg-term-card border border-term-border rounded-2xl p-6 sm:p-8">
@@ -125,7 +156,7 @@
                         <h3 class="text-xl font-bold text-white">Parte 1: Entorno de Trabajo (Ubuntu)</h3>
                     </div>
                     <div id="blocks-consigna-1" class="space-y-3 mb-4"></div>
-                    <div class="bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2 mb-4">
+                    <div data-team-only class="hidden bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2 mb-4">
                         <div class="flex items-center gap-2">
                             <input type="text" id="author-1" placeholder="Tu nombre / integrante..." class="bg-term-card border border-term-border rounded-lg px-3 py-1 text-xs text-brand-500 outline-none focus:border-brand-500 w-1/3">
                         </div>
@@ -138,8 +169,12 @@
                     </div>
                     <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
                         <label for="image-ubuntu" class="text-xs font-mono text-gray-400 block mb-2">Captura de pantalla del escritorio de Ubuntu</label>
-                        <input id="image-author-ubuntu" type="text" placeholder="Nombre del integrante que comparte la captura..." class="mb-3 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
-                        <input id="image-ubuntu" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-500">
+                        <div data-team-only class="hidden">
+                            <input id="image-author-ubuntu" type="text" placeholder="Nombre del integrante que comparte la captura..." class="mb-3 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                            <input id="image-ubuntu" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-500">
+                            <button id="publish-image-ubuntu" type="button" class="mt-3 hidden rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-500">Publicar captura</button>
+                            <p id="image-upload-status-ubuntu" class="mt-2 text-xs text-gray-400" role="status" aria-live="polite"></p>
+                        </div>
                         <div id="preview-ubuntu" class="mt-3 min-h-32 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                     </div>
                 </div>
@@ -151,7 +186,7 @@
                         <h3 class="text-xl font-bold text-white">Consigna 1: El Mundo Post-Windows 10 y Hardware</h3>
                     </div>
                     <div id="blocks-consigna-2" class="space-y-3 mb-4"></div>
-                    <div class="bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2 mb-4">
+                    <div data-team-only class="hidden bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2 mb-4">
                         <div class="flex items-center gap-2">
                             <input type="text" id="author-2" placeholder="Tu nombre / integrante..." class="bg-term-card border border-term-border rounded-lg px-3 py-1 text-xs text-brand-500 outline-none focus:border-brand-500 w-1/3">
                         </div>
@@ -164,8 +199,12 @@
                     </div>
                     <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
                         <label for="image-monitor" class="text-xs font-mono text-gray-400 block mb-2">Captura del Monitor del Sistema</label>
-                        <input id="image-author-monitor" type="text" placeholder="Nombre del integrante que comparte la captura..." class="mb-3 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
-                        <input id="image-monitor" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-500">
+                        <div data-team-only class="hidden">
+                            <input id="image-author-monitor" type="text" placeholder="Nombre del integrante que comparte la captura..." class="mb-3 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                            <input id="image-monitor" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-500">
+                            <button id="publish-image-monitor" type="button" class="mt-3 hidden rounded-lg bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-500">Publicar captura</button>
+                            <p id="image-upload-status-monitor" class="mt-2 text-xs text-gray-400" role="status" aria-live="polite"></p>
+                        </div>
                         <div id="preview-monitor" class="mt-3 min-h-32 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                     </div>
                 </div>
@@ -177,7 +216,7 @@
                         <h3 class="text-xl font-bold text-white">Consigna 2: "Mi PC a mi Manera" - Personalización</h3>
                     </div>
                     <div id="blocks-consigna-3" class="space-y-3 mb-4"></div>
-                    <div class="bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2 mb-4">
+                    <div data-team-only class="hidden bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2 mb-4">
                         <div class="flex items-center gap-2">
                             <input type="text" id="author-3" placeholder="Tu nombre / integrante..." class="bg-term-card border border-term-border rounded-lg px-3 py-1 text-xs text-brand-500 outline-none focus:border-brand-500 w-1/3">
                         </div>
@@ -192,15 +231,23 @@
                         <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
                             <span class="text-xs font-mono text-gray-400 block mb-2">Escritorio Original (Antes)</span>
                             <label for="image-before" class="sr-only">Seleccionar captura del escritorio antes de personalizar</label>
-                            <input id="image-author-before" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
-                            <input id="image-before" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                            <div data-team-only class="hidden">
+                                <input id="image-author-before" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                                <input id="image-before" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                                <button id="publish-image-before" type="button" class="mt-2 hidden rounded-lg bg-brand-600 px-3 py-2 text-xs font-bold text-white hover:bg-brand-500">Publicar captura</button>
+                                <p id="image-upload-status-before" class="mt-2 text-xs text-gray-400" role="status" aria-live="polite"></p>
+                            </div>
                             <div id="preview-before" class="mt-3 min-h-28 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                         </div>
                         <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
                             <span class="text-xs font-mono text-gray-400 block mb-2">Escritorio Personalizado (Después)</span>
                             <label for="image-after" class="sr-only">Seleccionar captura del escritorio después de personalizar</label>
-                            <input id="image-author-after" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
-                            <input id="image-after" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                            <div data-team-only class="hidden">
+                                <input id="image-author-after" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                                <input id="image-after" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                                <button id="publish-image-after" type="button" class="mt-2 hidden rounded-lg bg-brand-600 px-3 py-2 text-xs font-bold text-white hover:bg-brand-500">Publicar captura</button>
+                                <p id="image-upload-status-after" class="mt-2 text-xs text-gray-400" role="status" aria-live="polite"></p>
+                            </div>
                             <div id="preview-after" class="mt-3 min-h-28 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                         </div>
                     </div>
@@ -213,7 +260,7 @@
                         <h3 class="text-xl font-bold text-white">Consignas 3 & 4: Perfiles, Software Libre e IA</h3>
                     </div>
                     <div id="blocks-consigna-4" class="space-y-3 mb-4"></div>
-                    <div class="bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2">
+                    <div data-team-only class="hidden bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2">
                         <div class="flex items-center gap-2">
                             <input type="text" id="author-4" placeholder="Tu nombre / integrante..." class="bg-term-card border border-term-border rounded-lg px-3 py-1 text-xs text-brand-500 outline-none focus:border-brand-500 w-1/3">
                         </div>
@@ -233,7 +280,7 @@
                         <h3 class="text-xl font-bold text-white">Consigna 5: Conclusión y Reflexión Grupal</h3>
                     </div>
                     <div id="blocks-consigna-5" class="space-y-3 mb-4"></div>
-                    <div class="bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2">
+                    <div data-team-only class="hidden bg-term-bg border border-term-border rounded-xl p-3 flex flex-col gap-2">
                         <div class="flex items-center gap-2">
                             <input type="text" id="author-5" placeholder="Tu nombre / integrante..." class="bg-term-card border border-term-border rounded-lg px-3 py-1 text-xs text-brand-500 outline-none focus:border-brand-500 w-1/3">
                         </div>
@@ -517,16 +564,25 @@
         let reportModalObjectUrl;
         let reportClient;
         let reportUser = null;
+        let reportCanManage = false;
         let reportRealtimeChannel;
         let reportLoadGeneration = 0;
         const reportPendingPostChanges = new Map();
         const reportPendingImageChanges = new Map();
+        const reportPendingImageFiles = new Map();
 
         function setReportSaveStatus(message, isError = false) {
             const status = document.getElementById('report-save-status');
             status.textContent = message;
             status.classList.toggle('text-red-400', isError);
             status.classList.toggle('text-gray-500', !isError);
+        }
+
+        function setReportImageStatus(imageId, message, isError = false) {
+            const status = document.getElementById(`image-upload-status-${imageId}`);
+            status.textContent = message;
+            status.classList.toggle('text-red-400', isError);
+            status.classList.toggle('text-gray-400', !isError);
         }
 
         function openReportDatabase() {
@@ -604,6 +660,7 @@
                     query = query.upsert({
                         id: change.post.id,
                         consigna_id: Number(change.post.consignaId),
+                        source: change.post.source || 'team',
                         author: change.post.author,
                         body: change.post.text,
                         created_at: change.post.createdAt,
@@ -654,6 +711,7 @@
         async function loadSharedReport(user) {
             const loadGeneration = ++reportLoadGeneration;
             const isCurrentLoad = () => reportLoadGeneration === loadGeneration && reportUser?.id === user.id;
+            setReportTeamControls(false);
             if (reportRealtimeChannel) {
                 reportClient.removeChannel(reportRealtimeChannel);
                 reportRealtimeChannel = null;
@@ -667,10 +725,15 @@
             if (membershipError) throw membershipError;
             if (!isCurrentLoad()) return;
             if (!membership) {
-                setReportSaveStatus('Tu correo todavía no está autorizado para este equipo.', true);
+                reportCanManage = false;
+                setReportTeamControls(false);
+                setReportSaveStatus('Sesión sin permisos del equipo. Puedes leer el mural y publicar un aporte público.');
+                await loadPublicSharedReport();
                 return;
             }
 
+            reportCanManage = true;
+            setReportTeamControls(true);
             const [{ data: remotePosts, error: postsError }, { data: remoteImages, error: imagesError }] = await Promise.all([
                 reportClient.from('report_posts').select('*'),
                 reportClient.from('report_images').select('*')
@@ -687,6 +750,7 @@
                     reportState.posts[consignaId].push({
                         id: row.id,
                         consignaId,
+                        source: row.source || 'team',
                         author: row.author,
                         text: row.body,
                         createdAt: row.created_at
@@ -753,6 +817,119 @@
             subscribeToReportChanges();
         }
 
+        function setReportTeamControls(canManage) {
+            reportCanManage = canManage;
+            document.querySelectorAll('[data-team-only]').forEach(control => {
+                control.classList.toggle('hidden', !canManage);
+            });
+            for (let consignaId = 1; consignaId <= 5; consignaId++) renderReportBlocks(consignaId);
+            reportImageIds.forEach(renderReportImage);
+        }
+
+        async function loadPublicSharedReport() {
+            const loadGeneration = ++reportLoadGeneration;
+            const isCurrentLoad = () => reportLoadGeneration === loadGeneration;
+            if (reportRealtimeChannel) {
+                reportClient.removeChannel(reportRealtimeChannel);
+                reportRealtimeChannel = null;
+            }
+            setReportTeamControls(false);
+            setReportSaveStatus('Cargando mural público...');
+            const [{ data: remotePosts, error: postsError }, { data: remoteImages, error: imagesError }] = await Promise.all([
+                reportClient.from('report_posts').select('*').order('created_at', { ascending: true }),
+                reportClient.from('report_images').select('*')
+            ]);
+            if (postsError) throw postsError;
+            if (imagesError) throw imagesError;
+            if (!isCurrentLoad()) return;
+
+            reportState.posts = {};
+            remotePosts.forEach(row => {
+                const consignaId = String(row.consigna_id);
+                if (!reportState.posts[consignaId]) reportState.posts[consignaId] = [];
+                reportState.posts[consignaId].push({
+                    id: row.id,
+                    consignaId,
+                    source: row.source || 'team',
+                    author: row.author,
+                    text: row.body,
+                    createdAt: row.created_at
+                });
+            });
+            reportState.images = {};
+            for (const image of remoteImages) {
+                const { data: blob, error: imageError } = await reportClient.storage.from(reportBucketName).download(image.path);
+                if (imageError) throw imageError;
+                reportState.images[image.image_id] = {
+                    blob,
+                    path: image.path,
+                    name: image.name,
+                    author: image.author,
+                    createdAt: image.created_at
+                };
+            }
+            if (!isCurrentLoad()) return;
+            for (let consignaId = 1; consignaId <= 5; consignaId++) renderReportBlocks(consignaId);
+            reportImageIds.forEach(renderReportImage);
+            document.getElementById('report-content').classList.remove('hidden');
+            setReportSaveStatus('Mural público conectado. Los aportes nuevos se comparten en tiempo real.');
+            subscribeToReportChanges();
+        }
+
+        function setupPublicForum() {
+            const form = document.getElementById('public-post-form');
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                const authorInput = document.getElementById('public-post-author');
+                const bodyInput = document.getElementById('public-post-body');
+                const consignaId = document.getElementById('public-post-consigna').value;
+                const author = authorInput.value.trim();
+                const text = bodyInput.value.trim();
+                const status = document.getElementById('public-post-status');
+                const submit = document.getElementById('public-post-submit');
+                if (author.length < 2 || author.length > 60 || text.length < 3 || text.length > 2000) {
+                    status.textContent = 'Usa un nombre de 2 a 60 caracteres y un aporte de 3 a 2000 caracteres.';
+                    status.classList.add('text-red-400');
+                    return;
+                }
+
+                submit.disabled = true;
+                status.classList.remove('text-red-400');
+                status.textContent = 'Publicando en el mural...';
+                try {
+                    const post = {
+                        id: crypto.randomUUID(),
+                        consigna_id: Number(consignaId),
+                        source: 'public',
+                        author,
+                        body: text,
+                        created_at: new Date().toISOString()
+                    };
+                    const { data, error } = await reportClient.from('report_posts').insert(post).select().single();
+                    if (error) throw error;
+                    if (!reportState.posts[consignaId]) reportState.posts[consignaId] = [];
+                    reportState.posts[consignaId].push({
+                        id: data.id,
+                        consignaId,
+                        source: 'public',
+                        author: data.author,
+                        text: data.body,
+                        createdAt: data.created_at
+                    });
+                    renderReportBlocks(consignaId);
+                    await writeReportState();
+                    bodyInput.value = '';
+                    status.textContent = '¡Aporte publicado! Ya aparece en el mural para todos.';
+                } catch (error) {
+                    console.error('Error al publicar en el foro público:', error);
+                    status.textContent = `No se pudo publicar: ${error.message}`;
+                    status.classList.add('text-red-400');
+                } finally {
+                    submit.disabled = false;
+                }
+            });
+        }
+
         function subscribeToReportChanges() {
             if (reportRealtimeChannel) reportClient.removeChannel(reportRealtimeChannel);
             reportRealtimeChannel = reportClient.channel('shared-report-updates')
@@ -767,6 +944,7 @@
                         const updatedPost = {
                             id: row.id,
                             consignaId,
+                            source: row.source || 'team',
                             author: row.author,
                             text: row.body,
                             createdAt: row.created_at
@@ -830,6 +1008,7 @@
                 return;
             }
             reportClient = window.supabase.createClient(reportSupabaseUrl, reportSupabasePublicKey);
+            setupPublicForum();
 
             loginForm.addEventListener('submit', async event => {
                 event.preventDefault();
@@ -866,18 +1045,25 @@
                 reportUser = session?.user || null;
                 if (!reportUser) {
                     reportLoadGeneration++;
+                    reportCanManage = false;
                     if (reportRealtimeChannel) {
                         reportClient.removeChannel(reportRealtimeChannel);
                         reportRealtimeChannel = null;
                     }
-                    document.getElementById('report-content').classList.add('hidden');
+                    setReportTeamControls(false);
                     loginForm.classList.remove('hidden');
                     userPanel.classList.add('hidden');
                     userPanel.classList.remove('flex');
-                    setReportSaveStatus('Inicia sesión con un correo autorizado del equipo.');
+                    loadPublicSharedReport().catch(error => {
+                        console.error('Error al cargar el mural público:', error);
+                        document.getElementById('report-content').classList.add('hidden');
+                        setReportSaveStatus(`No se pudo cargar el mural. Verifica que ejecutaste la migración pública en Supabase: ${error.message}`, true);
+                    });
                     return;
                 }
                 if (_event !== 'INITIAL_SESSION' && _event !== 'SIGNED_IN') return;
+                reportCanManage = false;
+                setReportTeamControls(false);
                 loginForm.classList.add('hidden');
                 userPanel.classList.remove('hidden');
                 userPanel.classList.add('flex');
@@ -893,22 +1079,26 @@
             setReportSaveStatus('Inicia sesión con un correo autorizado del equipo.');
         }
 
+        function saveReportChanges() {
+            const savePromise = reportSaveQueue.then(async () => {
+                if (!reportUser) throw new Error('Inicia sesión para guardar en el espacio del equipo.');
+                await syncSharedReport();
+                await writeReportState();
+            });
+            reportSaveQueue = savePromise.catch(error => {
+                console.error('Error al guardar el informe:', error);
+                setReportSaveStatus(`No se pudo guardar: ${error.message}`, true);
+            });
+            return savePromise;
+        }
+
         function scheduleReportSave() {
             setReportSaveStatus('Guardando cambios...');
             clearTimeout(reportSaveTimer);
             reportSaveTimer = setTimeout(() => {
-                reportSaveQueue = reportSaveQueue
-                    .then(async () => {
-                        await writeReportState();
-                        if (!reportUser) throw new Error('Inicia sesión para guardar en el espacio del equipo.');
-                        await syncSharedReport();
-                        await writeReportState();
-                    })
+                saveReportChanges()
                     .then(() => setReportSaveStatus('Cambios guardados y compartidos con el equipo.'))
-                    .catch(error => {
-                        console.error('Error al guardar el informe:', error);
-                        setReportSaveStatus(`No se pudo guardar: ${error.message}`, true);
-                    });
+                    .catch(() => {});
             }, 300);
         }
 
@@ -931,22 +1121,31 @@
                 time.className = 'text-[10px] font-mono text-gray-500';
                 time.textContent = new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 metadata.append(author, time);
+                const source = document.createElement('span');
+                source.className = post.source === 'public'
+                    ? 'rounded bg-term-cyan/10 px-2 py-0.5 text-[10px] font-mono text-term-cyan'
+                    : 'rounded bg-brand-500/10 px-2 py-0.5 text-[10px] font-mono text-brand-500';
+                source.textContent = post.source === 'public' ? 'Foro público' : 'Equipo';
+                metadata.appendChild(source);
 
                 const text = document.createElement('p');
                 text.className = 'text-sm text-gray-200 font-sans leading-relaxed outline-none focus:bg-term-card focus:p-2 focus:rounded-lg';
-                text.contentEditable = 'true';
+                text.contentEditable = String(reportCanManage && post.source !== 'public');
                 text.dataset.postId = post.id;
-                text.title = 'Haz clic para editar';
+                text.title = reportCanManage && post.source !== 'public' ? 'Haz clic para editar' : '';
                 text.textContent = post.text;
                 content.append(metadata, text);
 
-                const remove = document.createElement('button');
-                remove.type = 'button';
-                remove.className = 'text-gray-600 hover:text-red-400 text-xs p-1';
-                remove.dataset.deletePost = post.id;
-                remove.setAttribute('aria-label', 'Eliminar aporte');
-                remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
-                block.append(content, remove);
+                block.appendChild(content);
+                if (reportCanManage && post.source !== 'public') {
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'text-gray-600 hover:text-red-400 text-xs p-1';
+                    remove.dataset.deletePost = post.id;
+                    remove.setAttribute('aria-label', 'Eliminar aporte');
+                    remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                    block.appendChild(remove);
+                }
                 container.appendChild(block);
             });
         }
@@ -991,44 +1190,33 @@
             instruction.textContent = 'Selecciona la captura para ampliarla';
             openButton.append(imageElement, instruction);
 
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.className = 'text-xs text-gray-500 hover:text-red-400';
-            removeButton.dataset.deleteReportImage = imageId;
-            removeButton.textContent = 'Eliminar captura';
-            preview.append(comment, openButton, removeButton);
+            preview.append(comment, openButton);
+            if (reportCanManage) {
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'text-xs text-gray-500 hover:text-red-400';
+                removeButton.dataset.deleteReportImage = imageId;
+                removeButton.textContent = 'Eliminar captura';
+                preview.appendChild(removeButton);
+            }
         }
 
         function setupReportImageUploads() {
             reportImageIds.forEach(imageId => {
                 const input = document.getElementById(`image-${imageId}`);
                 const authorInput = document.getElementById(reportImageOwnerInputs[imageId]);
+                const publishButton = document.getElementById(`publish-image-${imageId}`);
                 input.addEventListener('change', () => {
                     const file = input.files[0];
                     if (!file) return;
                     if (!file.type.startsWith('image/')) {
                         input.value = '';
-                        setReportSaveStatus('Selecciona un archivo de imagen válido.', true);
+                        setReportImageStatus(imageId, 'Selecciona un archivo de imagen válido.', true);
                         return;
                     }
-                    const author = authorInput.value.trim();
-                    if (!author) {
-                        input.value = '';
-                        setReportSaveStatus('Escribe el nombre del integrante antes de subir la captura.', true);
-                        authorInput.focus();
-                        return;
-                    }
-                    const previousImage = reportState.images[imageId];
-                    const image = {
-                        blob: file,
-                        name: file.name,
-                        author,
-                        createdAt: new Date().toISOString()
-                    };
-                    reportState.images[imageId] = image;
-                    queueReportImageChange(imageId, image, previousImage?.path ? [previousImage.path] : []);
-                    renderReportImage(imageId);
-                    scheduleReportSave();
+                    reportPendingImageFiles.set(imageId, file);
+                    publishButton.classList.remove('hidden');
+                    setReportImageStatus(imageId, `Lista para publicar: ${file.name}`);
                 });
                 authorInput.addEventListener('input', () => {
                     reportState.drafts[authorInput.id] = authorInput.value;
@@ -1038,6 +1226,46 @@
                         renderReportImage(imageId);
                     }
                     scheduleReportSave();
+                });
+                publishButton.addEventListener('click', async () => {
+                    const file = reportPendingImageFiles.get(imageId);
+                    if (!file) {
+                        setReportImageStatus(imageId, 'Selecciona una imagen antes de publicarla.', true);
+                        return;
+                    }
+                    if (!reportUser) {
+                        setReportImageStatus(imageId, 'Inicia sesión con un correo autorizado antes de publicar.', true);
+                        return;
+                    }
+                    const author = authorInput.value.trim();
+                    if (!author) {
+                        setReportImageStatus(imageId, 'Escribe el nombre del integrante antes de publicar.', true);
+                        authorInput.focus();
+                        return;
+                    }
+
+                    const previousImage = reportState.images[imageId];
+                    const image = { blob: file, name: file.name, author, createdAt: new Date().toISOString() };
+                    reportState.images[imageId] = image;
+                    queueReportImageChange(imageId, image, previousImage?.path ? [previousImage.path] : []);
+                    renderReportImage(imageId);
+                    publishButton.disabled = true;
+                    publishButton.textContent = 'Publicando...';
+                    setReportImageStatus(imageId, 'Subiendo la captura al espacio compartido...');
+                    try {
+                        clearTimeout(reportSaveTimer);
+                        await saveReportChanges();
+                        reportPendingImageFiles.delete(imageId);
+                        input.value = '';
+                        publishButton.classList.add('hidden');
+                        setReportImageStatus(imageId, 'Captura publicada y compartida con el equipo.');
+                        setReportSaveStatus('Captura publicada y compartida con el equipo.');
+                    } catch (error) {
+                        setReportImageStatus(imageId, `No se pudo publicar: ${error.message}`, true);
+                    } finally {
+                        publishButton.disabled = false;
+                        publishButton.textContent = 'Publicar captura';
+                    }
                 });
             });
 
