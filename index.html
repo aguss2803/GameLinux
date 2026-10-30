@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,11 +95,29 @@
                     Trabajo Práctico: Explorando el Mundo de Linux
                 </h2>
                 <p class="text-gray-400 text-sm mt-2">
-                    Muro de aportes interactivos. Escribe tus conclusiones por consigna, presiona Enter y se agregará.
+                    Comparte aportes y capturas con tu equipo. Inicia sesión para ver y guardar el informe compartido.
                 </p>
+                <p id="report-save-status" class="text-xs font-mono text-gray-500 mt-3" role="status" aria-live="polite">Conectando al espacio compartido...</p>
             </div>
 
-            <div class="space-y-6">
+            <div id="report-auth-panel" class="mx-auto mb-6 max-w-xl rounded-2xl border border-term-border bg-term-card p-6">
+                <form id="report-login-form" class="space-y-4">
+                    <div>
+                        <label for="report-login-email" class="mb-2 block text-sm font-semibold text-white">Correo del equipo</label>
+                        <input id="report-login-email" type="email" required autocomplete="email" placeholder="tu@correo.com" class="w-full rounded-lg border border-term-border bg-term-bg px-3 py-2 text-sm text-white outline-none focus:border-brand-500">
+                    </div>
+                    <button id="report-login-btn" type="submit" class="w-full rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-500">
+                        Enviarme un enlace para ingresar
+                    </button>
+                    <p class="text-xs text-gray-500">Solo pueden ingresar los integrantes invitados y autorizados para el equipo.</p>
+                </form>
+                <div id="report-user-panel" class="hidden items-center justify-between gap-3">
+                    <p class="text-sm text-gray-300">Sesión: <span id="report-user-email" class="font-semibold text-brand-500"></span></p>
+                    <button id="report-logout-btn" type="button" class="rounded-lg border border-term-border px-3 py-2 text-xs text-gray-300 hover:text-white">Cerrar sesión</button>
+                </div>
+            </div>
+
+            <div id="report-content" class="hidden space-y-6">
                 <!-- PARTE 1 -->
                 <div class="bg-term-card border border-term-border rounded-2xl p-6 sm:p-8">
                     <div class="flex items-center gap-3 mb-4">
@@ -118,8 +137,10 @@
                         </div>
                     </div>
                     <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
-                        <div class="text-xs font-mono text-gray-500 mb-2">[ Inserta aquí tu captura de pantalla del escritorio de Ubuntu ]</div>
-                        <div class="h-32 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Captura de Escritorio Ubuntu</div>
+                        <label for="image-ubuntu" class="text-xs font-mono text-gray-400 block mb-2">Captura de pantalla del escritorio de Ubuntu</label>
+                        <input id="image-author-ubuntu" type="text" placeholder="Nombre del integrante que comparte la captura..." class="mb-3 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                        <input id="image-ubuntu" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-500">
+                        <div id="preview-ubuntu" class="mt-3 min-h-32 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                     </div>
                 </div>
 
@@ -142,8 +163,10 @@
                         </div>
                     </div>
                     <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
-                        <div class="text-xs font-mono text-gray-500 mb-2">[ Inserta aquí tu captura del Monitor del Sistema ]</div>
-                        <div class="h-32 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Captura Monitor del Sistema</div>
+                        <label for="image-monitor" class="text-xs font-mono text-gray-400 block mb-2">Captura del Monitor del Sistema</label>
+                        <input id="image-author-monitor" type="text" placeholder="Nombre del integrante que comparte la captura..." class="mb-3 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                        <input id="image-monitor" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:font-semibold file:text-white hover:file:bg-brand-500">
+                        <div id="preview-monitor" class="mt-3 min-h-32 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                     </div>
                 </div>
 
@@ -168,11 +191,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
                             <span class="text-xs font-mono text-gray-400 block mb-2">Escritorio Original (Antes)</span>
-                            <div class="h-28 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Captura Antes</div>
+                            <label for="image-before" class="sr-only">Seleccionar captura del escritorio antes de personalizar</label>
+                            <input id="image-author-before" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                            <input id="image-before" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                            <div id="preview-before" class="mt-3 min-h-28 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                         </div>
                         <div class="p-4 bg-term-bg border border-term-border rounded-xl text-center">
                             <span class="text-xs font-mono text-gray-400 block mb-2">Escritorio Personalizado (Después)</span>
-                            <div class="h-28 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Captura Después</div>
+                            <label for="image-after" class="sr-only">Seleccionar captura del escritorio después de personalizar</label>
+                            <input id="image-author-after" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full bg-term-card border border-term-border rounded-lg px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                            <input id="image-after" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                            <div id="preview-after" class="mt-3 min-h-28 border-2 border-dashed border-term-border rounded-lg flex items-center justify-center text-gray-600 text-xs font-mono">Selecciona una imagen</div>
                         </div>
                     </div>
                 </div>
@@ -260,6 +289,10 @@
                         </div>
                         <h3 id="quest-title" class="text-xl font-bold text-white mb-2">Solicitud</h3>
                         <p id="quest-description" class="text-gray-300 text-sm leading-relaxed mb-6"></p>
+                        <button id="quest-hint-btn" type="button" class="text-xs font-semibold text-term-cyan hover:text-white">
+                            <i class="fa-regular fa-lightbulb mr-1"></i> Necesito una pista
+                        </button>
+                        <p id="quest-hint" class="hidden mt-3 rounded-lg border border-term-cyan/30 bg-term-cyan/5 p-3 text-sm text-gray-300 leading-relaxed" role="status"></p>
                     </div>
                     <div class="mt-6 pt-4 border-t border-term-border flex items-center justify-between text-xs text-gray-400 font-mono">
                         <span>Estado: <strong id="quest-status-text" class="text-term-yellow">En progreso</strong></span>
@@ -299,6 +332,18 @@
             </div>
         </div>
     </div>
+
+    <dialog id="report-image-modal" class="fixed inset-0 m-0 h-full max-h-full w-full max-w-full bg-transparent p-4 backdrop:bg-black/90">
+        <div class="flex h-full w-full flex-col items-center justify-center">
+            <div class="mb-3 flex w-full max-w-5xl items-center justify-between gap-4">
+                <p id="report-image-modal-author" class="font-mono text-sm font-bold text-white"></p>
+                <button id="report-image-modal-close" type="button" class="rounded-lg bg-term-card px-4 py-2 text-sm text-white hover:bg-term-border" aria-label="Cerrar imagen ampliada">
+                    <i class="fa-solid fa-xmark mr-1"></i> Cerrar
+                </button>
+            </div>
+            <img id="report-image-modal-img" class="max-h-[85vh] max-w-full rounded-xl object-contain" alt="Captura ampliada del informe">
+        </div>
+    </dialog>
 
     <!-- TERMINAL SANDBOX LIBRE -->
     <section id="terminal-section" class="py-16 bg-[#0a0d12]">
@@ -454,29 +499,643 @@
     <!-- SCRIPT PRINCIPAL INTEGRO -->
     <script>
         // 1. SISTEMA DE APORTES EN BLOQUES
+        const reportDbName = 'linuxos-report';
+        const reportStoreName = 'report-data';
+        const reportSupabaseUrl = 'https://whzuzmqrnqafivbalega.supabase.co';
+        const reportSupabasePublicKey = 'sb_publishable_mgjsqgwl9KluWOz7HZ9lbA_q8mXvtD7';
+        const reportBucketName = 'report-images';
+        const reportImageIds = ['ubuntu', 'monitor', 'before', 'after'];
+        const reportImageOwnerInputs = {
+            ubuntu: 'image-author-ubuntu',
+            monitor: 'image-author-monitor',
+            before: 'image-author-before',
+            after: 'image-author-after'
+        };
+        const reportState = { posts: {}, images: {}, drafts: {} };
+        let reportSaveTimer;
+        let reportSaveQueue = Promise.resolve();
+        let reportModalObjectUrl;
+        let reportClient;
+        let reportUser = null;
+        let reportRealtimeChannel;
+        let reportLoadGeneration = 0;
+        const reportPendingPostChanges = new Map();
+        const reportPendingImageChanges = new Map();
+
+        function setReportSaveStatus(message, isError = false) {
+            const status = document.getElementById('report-save-status');
+            status.textContent = message;
+            status.classList.toggle('text-red-400', isError);
+            status.classList.toggle('text-gray-500', !isError);
+        }
+
+        function openReportDatabase() {
+            return new Promise((resolve, reject) => {
+                if (!window.indexedDB) {
+                    reject(new Error('Este navegador no permite guardar datos localmente.'));
+                    return;
+                }
+                const request = indexedDB.open(reportDbName, 1);
+                request.onupgradeneeded = () => {
+                    if (!request.result.objectStoreNames.contains(reportStoreName)) {
+                        request.result.createObjectStore(reportStoreName);
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error || new Error('No se pudo abrir el almacenamiento local.'));
+                request.onblocked = () => reject(new Error('El almacenamiento está bloqueado por otra pestaña.'));
+            });
+        }
+
+        async function readReportState() {
+            const database = await openReportDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction(reportStoreName, 'readonly');
+                const request = transaction.objectStore(reportStoreName).get('current');
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => reject(request.error || new Error('No se pudieron leer los aportes guardados.'));
+                transaction.oncomplete = () => database.close();
+                transaction.onerror = () => {
+                    database.close();
+                    reject(transaction.error || new Error('No se pudieron leer los aportes guardados.'));
+                };
+            });
+        }
+
+        async function writeReportState() {
+            const database = await openReportDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction(reportStoreName, 'readwrite');
+                transaction.objectStore(reportStoreName).put(reportState, 'current');
+                transaction.oncomplete = () => {
+                    database.close();
+                    resolve();
+                };
+                transaction.onerror = () => {
+                    database.close();
+                    reject(transaction.error || new Error('No se pudieron guardar los cambios.'));
+                };
+                transaction.onabort = () => {
+                    database.close();
+                    reject(transaction.error || new Error('Se canceló el guardado de los cambios.'));
+                };
+            });
+        }
+
+        function queueReportPostChange(post, action = 'upsert') {
+            reportPendingPostChanges.set(post.id, { action, post });
+        }
+
+        function queueReportImageChange(imageId, image, previousPaths = []) {
+            const pending = reportPendingImageChanges.get(imageId);
+            reportPendingImageChanges.set(imageId, {
+                action: image ? 'upsert' : 'delete',
+                image,
+                previousPaths: [...new Set([...(pending?.previousPaths || []), ...previousPaths])]
+            });
+        }
+
+        async function syncSharedReport() {
+            for (const [postId, change] of reportPendingPostChanges) {
+                let query = reportClient.from('report_posts');
+                if (change.action === 'delete') {
+                    query = query.delete().eq('id', postId);
+                } else {
+                    query = query.upsert({
+                        id: change.post.id,
+                        consigna_id: Number(change.post.consignaId),
+                        author: change.post.author,
+                        body: change.post.text,
+                        created_at: change.post.createdAt,
+                        updated_at: new Date().toISOString()
+                    });
+                }
+                const { error } = await query;
+                if (error) throw error;
+                if (reportPendingPostChanges.get(postId) === change) reportPendingPostChanges.delete(postId);
+            }
+
+            for (const [imageId, change] of reportPendingImageChanges) {
+                if (change.image) {
+                    const image = change.image;
+                    if (!image.path) {
+                        if (!(image.blob instanceof Blob)) {
+                            throw new Error(`La captura "${image.name || imageId}" no tiene datos para subir.`);
+                        }
+                        const extension = image.name?.match(/\.[a-z0-9]{1,8}$/i)?.[0] || '';
+                        const path = `${imageId}/${crypto.randomUUID()}${extension}`;
+                        const { error: uploadError } = await reportClient.storage
+                            .from(reportBucketName)
+                            .upload(path, image.blob, { contentType: image.blob.type || 'application/octet-stream' });
+                        if (uploadError) throw uploadError;
+                        image.path = path;
+                    }
+                    const { error } = await reportClient.from('report_images').upsert({
+                        image_id: imageId,
+                        path: image.path,
+                        name: image.name,
+                        author: image.author,
+                        created_at: image.createdAt,
+                        updated_at: new Date().toISOString()
+                    });
+                    if (error) throw error;
+                } else {
+                    const { error } = await reportClient.from('report_images').delete().eq('image_id', imageId);
+                    if (error) throw error;
+                }
+                if (reportPendingImageChanges.get(imageId) === change) reportPendingImageChanges.delete(imageId);
+                if (change.previousPaths.length) {
+                    const { error } = await reportClient.storage.from(reportBucketName).remove(change.previousPaths);
+                    if (error) throw error;
+                }
+            }
+        }
+
+        async function loadSharedReport(user) {
+            const loadGeneration = ++reportLoadGeneration;
+            const isCurrentLoad = () => reportLoadGeneration === loadGeneration && reportUser?.id === user.id;
+            if (reportRealtimeChannel) {
+                reportClient.removeChannel(reportRealtimeChannel);
+                reportRealtimeChannel = null;
+            }
+            document.getElementById('report-content').classList.add('hidden');
+            setReportSaveStatus('Verificando acceso al informe compartido...');
+            const { data: membership, error: membershipError } = await reportClient
+                .from('team_members')
+                .select('email')
+                .maybeSingle();
+            if (membershipError) throw membershipError;
+            if (!isCurrentLoad()) return;
+            if (!membership) {
+                setReportSaveStatus('Tu correo todavía no está autorizado para este equipo.', true);
+                return;
+            }
+
+            const [{ data: remotePosts, error: postsError }, { data: remoteImages, error: imagesError }] = await Promise.all([
+                reportClient.from('report_posts').select('*'),
+                reportClient.from('report_images').select('*')
+            ]);
+            if (postsError) throw postsError;
+            if (imagesError) throw imagesError;
+            if (!isCurrentLoad()) return;
+
+            if (remotePosts.length || remoteImages.length) {
+                reportState.posts = {};
+                remotePosts.forEach(row => {
+                    const consignaId = String(row.consigna_id);
+                    if (!reportState.posts[consignaId]) reportState.posts[consignaId] = [];
+                    reportState.posts[consignaId].push({
+                        id: row.id,
+                        consignaId,
+                        author: row.author,
+                        text: row.body,
+                        createdAt: row.created_at
+                    });
+                });
+                reportState.images = {};
+                for (const image of remoteImages) {
+                    const { data: blob, error: imageError } = await reportClient.storage
+                        .from(reportBucketName)
+                        .download(image.path);
+                    if (imageError) throw imageError;
+                    reportState.images[image.image_id] = {
+                        blob,
+                        path: image.path,
+                        name: image.name,
+                        author: image.author,
+                        createdAt: image.created_at
+                    };
+                }
+            } else {
+                const savedState = await readReportState();
+                if (savedState) {
+                    reportState.posts = savedState.posts || {};
+                    reportState.images = savedState.images || {};
+                    Object.assign(reportState.drafts, savedState.drafts || {});
+                    Object.entries(reportState.posts).forEach(([consignaId, posts]) => {
+                        posts.forEach(post => {
+                            post.consignaId = consignaId;
+                            queueReportPostChange(post);
+                        });
+                    });
+                    Object.entries(reportState.images).forEach(([imageId, image]) => {
+                        const authorInputId = reportImageOwnerInputs[imageId];
+                        image.author = image.author || reportState.drafts[authorInputId]?.trim() || 'Integrante';
+                        queueReportImageChange(imageId, image);
+                    });
+                    await syncSharedReport();
+                }
+            }
+
+            for (let consignaId = 1; consignaId <= 5; consignaId++) {
+                renderReportBlocks(consignaId);
+                ['author', 'input'].forEach(field => {
+                    const inputId = `${field}-${consignaId}`;
+                    document.getElementById(inputId).value = reportState.drafts[inputId] || '';
+                });
+            }
+            reportImageIds.forEach(imageId => {
+                const authorInput = document.getElementById(reportImageOwnerInputs[imageId]);
+                const savedAuthor = reportState.drafts[authorInput.id];
+                const image = reportState.images[imageId];
+                if (image?.author === 'Integrante' && !savedAuthor) delete image.author;
+                authorInput.value = savedAuthor || image?.author || '';
+                if (image && !image.author && authorInput.value.trim()) {
+                    image.author = authorInput.value.trim();
+                    queueReportImageChange(imageId, image);
+                }
+                renderReportImage(imageId);
+            });
+            await writeReportState();
+            if (!isCurrentLoad()) return;
+            document.getElementById('report-content').classList.remove('hidden');
+            setReportSaveStatus(`Informe compartido conectado · ${user.email}`);
+            subscribeToReportChanges();
+        }
+
+        function subscribeToReportChanges() {
+            if (reportRealtimeChannel) reportClient.removeChannel(reportRealtimeChannel);
+            reportRealtimeChannel = reportClient.channel('shared-report-updates')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'report_posts' }, payload => {
+                    const row = payload.new || payload.old;
+                    if (!row?.id || reportPendingPostChanges.has(row.id)) return;
+                    const consignaId = String(row.consigna_id);
+                    if (payload.eventType === 'DELETE') {
+                        reportState.posts[consignaId] = (reportState.posts[consignaId] || []).filter(post => post.id !== row.id);
+                    } else {
+                        if (!reportState.posts[consignaId]) reportState.posts[consignaId] = [];
+                        const updatedPost = {
+                            id: row.id,
+                            consignaId,
+                            author: row.author,
+                            text: row.body,
+                            createdAt: row.created_at
+                        };
+                        const existingIndex = reportState.posts[consignaId].findIndex(post => post.id === row.id);
+                        if (existingIndex < 0) reportState.posts[consignaId].push(updatedPost);
+                        else reportState.posts[consignaId][existingIndex] = updatedPost;
+                    }
+                    renderReportBlocks(consignaId);
+                    writeReportState().catch(error => {
+                        console.error('Error al guardar en caché un aporte compartido:', error);
+                    });
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'report_images' }, async payload => {
+                    const row = payload.new || payload.old;
+                    const imageId = row?.image_id;
+                    if (!imageId || reportPendingImageChanges.has(imageId)) return;
+                    if (payload.eventType === 'DELETE') {
+                        if (!reportState.images[imageId]) return;
+                        delete reportState.images[imageId];
+                        renderReportImage(imageId);
+                    } else {
+                        if (reportState.images[imageId]?.path === row.path) return;
+                        try {
+                            const { data: blob, error } = await reportClient.storage.from(reportBucketName).download(row.path);
+                            if (error) throw error;
+                            reportState.images[imageId] = {
+                                blob,
+                                path: row.path,
+                                name: row.name,
+                                author: row.author,
+                                createdAt: row.created_at
+                            };
+                            const authorInput = document.getElementById(reportImageOwnerInputs[imageId]);
+                            authorInput.value = row.author;
+                            reportState.drafts[authorInput.id] = row.author;
+                            renderReportImage(imageId);
+                        } catch (error) {
+                            console.error('Error al actualizar una captura compartida:', error);
+                            setReportSaveStatus(`No se pudo cargar una captura del equipo: ${error.message}`, true);
+                        }
+                    }
+                    writeReportState().catch(error => {
+                        console.error('Error al guardar en caché una captura compartida:', error);
+                    });
+                })
+                .subscribe(status => {
+                    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        setReportSaveStatus('Se perdió la conexión en tiempo real; recarga para ver los últimos cambios.', true);
+                    }
+                });
+        }
+
+        function setupReportAuthentication() {
+            const loginForm = document.getElementById('report-login-form');
+            const userPanel = document.getElementById('report-user-panel');
+            const emailInput = document.getElementById('report-login-email');
+
+            if (!window.supabase?.createClient) {
+                setReportSaveStatus('No se pudo cargar el servicio de acceso. Recarga la página e inténtalo de nuevo.', true);
+                return;
+            }
+            reportClient = window.supabase.createClient(reportSupabaseUrl, reportSupabasePublicKey);
+
+            loginForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                const button = document.getElementById('report-login-btn');
+                button.disabled = true;
+                setReportSaveStatus('Enviando enlace de acceso...');
+                try {
+                    const redirectUrl = new URL(window.location.href);
+                    redirectUrl.hash = '';
+                    redirectUrl.search = '';
+                    const { error } = await reportClient.auth.signInWithOtp({
+                        email: emailInput.value.trim(),
+                        options: { shouldCreateUser: false, emailRedirectTo: redirectUrl.toString() }
+                    });
+                    if (error) throw error;
+                    setReportSaveStatus('Revisa tu correo y abre el enlace para ingresar al informe.');
+                } catch (error) {
+                    console.error('Error al solicitar acceso al informe:', error);
+                    setReportSaveStatus(`No se pudo enviar el enlace: ${error.message}`, true);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+
+            document.getElementById('report-logout-btn').addEventListener('click', async () => {
+                const { error } = await reportClient.auth.signOut();
+                if (error) {
+                    console.error('Error al cerrar la sesión del informe:', error);
+                    setReportSaveStatus(`No se pudo cerrar la sesión: ${error.message}`, true);
+                }
+            });
+
+            reportClient.auth.onAuthStateChange((_event, session) => {
+                reportUser = session?.user || null;
+                if (!reportUser) {
+                    reportLoadGeneration++;
+                    if (reportRealtimeChannel) {
+                        reportClient.removeChannel(reportRealtimeChannel);
+                        reportRealtimeChannel = null;
+                    }
+                    document.getElementById('report-content').classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                    userPanel.classList.add('hidden');
+                    userPanel.classList.remove('flex');
+                    setReportSaveStatus('Inicia sesión con un correo autorizado del equipo.');
+                    return;
+                }
+                if (_event !== 'INITIAL_SESSION' && _event !== 'SIGNED_IN') return;
+                loginForm.classList.add('hidden');
+                userPanel.classList.remove('hidden');
+                userPanel.classList.add('flex');
+                document.getElementById('report-user-email').textContent = reportUser.email;
+                setTimeout(() => {
+                    loadSharedReport(reportUser).catch(error => {
+                        console.error('Error al cargar el informe compartido:', error);
+                        document.getElementById('report-content').classList.add('hidden');
+                        setReportSaveStatus(`No se pudo cargar el informe compartido: ${error.message}`, true);
+                    });
+                }, 0);
+            });
+            setReportSaveStatus('Inicia sesión con un correo autorizado del equipo.');
+        }
+
+        function scheduleReportSave() {
+            setReportSaveStatus('Guardando cambios...');
+            clearTimeout(reportSaveTimer);
+            reportSaveTimer = setTimeout(() => {
+                reportSaveQueue = reportSaveQueue
+                    .then(async () => {
+                        await writeReportState();
+                        if (!reportUser) throw new Error('Inicia sesión para guardar en el espacio del equipo.');
+                        await syncSharedReport();
+                        await writeReportState();
+                    })
+                    .then(() => setReportSaveStatus('Cambios guardados y compartidos con el equipo.'))
+                    .catch(error => {
+                        console.error('Error al guardar el informe:', error);
+                        setReportSaveStatus(`No se pudo guardar: ${error.message}`, true);
+                    });
+            }, 300);
+        }
+
+        function renderReportBlocks(consignaId) {
+            const container = document.getElementById(`blocks-consigna-${consignaId}`);
+            container.replaceChildren();
+            (reportState.posts[consignaId] || []).forEach(post => {
+                const block = document.createElement('div');
+                block.className = 'p-4 rounded-xl bg-term-bg border border-term-border flex items-start justify-between gap-3 group hover:border-brand-500/50 transition-all';
+
+                const content = document.createElement('div');
+                content.className = 'w-full';
+                const metadata = document.createElement('div');
+                metadata.className = 'flex items-center gap-2 mb-1';
+                const author = document.createElement('span');
+                author.className = 'text-xs font-mono font-bold text-brand-500';
+                author.innerHTML = '<i class="fa-solid fa-user-pen mr-1"></i>';
+                author.appendChild(document.createTextNode(post.author));
+                const time = document.createElement('span');
+                time.className = 'text-[10px] font-mono text-gray-500';
+                time.textContent = new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                metadata.append(author, time);
+
+                const text = document.createElement('p');
+                text.className = 'text-sm text-gray-200 font-sans leading-relaxed outline-none focus:bg-term-card focus:p-2 focus:rounded-lg';
+                text.contentEditable = 'true';
+                text.dataset.postId = post.id;
+                text.title = 'Haz clic para editar';
+                text.textContent = post.text;
+                content.append(metadata, text);
+
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'text-gray-600 hover:text-red-400 text-xs p-1';
+                remove.dataset.deletePost = post.id;
+                remove.setAttribute('aria-label', 'Eliminar aporte');
+                remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                block.append(content, remove);
+                container.appendChild(block);
+            });
+        }
+
+        function renderReportImage(imageId) {
+            const preview = document.getElementById(`preview-${imageId}`);
+            const image = reportState.images[imageId];
+            preview.replaceChildren();
+            if (!image) {
+                preview.classList.add('border-dashed');
+                preview.textContent = 'Selecciona una imagen';
+                return;
+            }
+
+            preview.classList.remove('border-dashed');
+            preview.classList.add('flex-col', 'gap-2', 'p-3');
+            const comment = document.createElement('div');
+            comment.className = 'flex w-full items-center justify-between gap-3 text-left';
+            const author = document.createElement('span');
+            author.className = 'text-xs font-mono font-bold text-brand-500';
+            author.innerHTML = '<i class="fa-solid fa-user-pen mr-1"></i>';
+            author.appendChild(document.createTextNode(image.author || 'Autor sin indicar'));
+            const date = document.createElement('span');
+            date.className = 'text-[10px] font-mono text-gray-500';
+            date.textContent = image.createdAt
+                ? new Date(image.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+                : '';
+            comment.append(author, date);
+
+            const openButton = document.createElement('button');
+            openButton.type = 'button';
+            openButton.className = 'group flex w-full flex-col items-center gap-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500';
+            openButton.dataset.openReportImage = imageId;
+            openButton.setAttribute('aria-label', `Ampliar captura compartida por ${image.author || 'integrante'}`);
+            const imageElement = document.createElement('img');
+            imageElement.src = URL.createObjectURL(image.blob);
+            imageElement.alt = image.name || 'Imagen adjunta al informe';
+            imageElement.className = 'max-h-64 max-w-full cursor-zoom-in rounded-lg object-contain transition-transform group-hover:scale-[1.02]';
+            imageElement.onload = () => URL.revokeObjectURL(imageElement.src);
+            const instruction = document.createElement('span');
+            instruction.className = 'text-xs text-gray-400';
+            instruction.textContent = 'Selecciona la captura para ampliarla';
+            openButton.append(imageElement, instruction);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'text-xs text-gray-500 hover:text-red-400';
+            removeButton.dataset.deleteReportImage = imageId;
+            removeButton.textContent = 'Eliminar captura';
+            preview.append(comment, openButton, removeButton);
+        }
+
+        function setupReportImageUploads() {
+            reportImageIds.forEach(imageId => {
+                const input = document.getElementById(`image-${imageId}`);
+                const authorInput = document.getElementById(reportImageOwnerInputs[imageId]);
+                input.addEventListener('change', () => {
+                    const file = input.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        input.value = '';
+                        setReportSaveStatus('Selecciona un archivo de imagen válido.', true);
+                        return;
+                    }
+                    const author = authorInput.value.trim();
+                    if (!author) {
+                        input.value = '';
+                        setReportSaveStatus('Escribe el nombre del integrante antes de subir la captura.', true);
+                        authorInput.focus();
+                        return;
+                    }
+                    const previousImage = reportState.images[imageId];
+                    const image = {
+                        blob: file,
+                        name: file.name,
+                        author,
+                        createdAt: new Date().toISOString()
+                    };
+                    reportState.images[imageId] = image;
+                    queueReportImageChange(imageId, image, previousImage?.path ? [previousImage.path] : []);
+                    renderReportImage(imageId);
+                    scheduleReportSave();
+                });
+                authorInput.addEventListener('input', () => {
+                    reportState.drafts[authorInput.id] = authorInput.value;
+                    if (reportState.images[imageId]) {
+                        reportState.images[imageId].author = authorInput.value.trim();
+                        queueReportImageChange(imageId, reportState.images[imageId]);
+                        renderReportImage(imageId);
+                    }
+                    scheduleReportSave();
+                });
+            });
+
+            document.getElementById('tp-section').addEventListener('click', event => {
+                const removeButton = event.target.closest('[data-delete-report-image]');
+                if (removeButton) {
+                    const imageId = removeButton.dataset.deleteReportImage;
+                    const image = reportState.images[imageId];
+                    queueReportImageChange(imageId, null, image?.path ? [image.path] : []);
+                    delete reportState.images[imageId];
+                    document.getElementById(`image-${imageId}`).value = '';
+                    renderReportImage(imageId);
+                    scheduleReportSave();
+                    return;
+                }
+
+                const openButton = event.target.closest('[data-open-report-image]');
+                if (!openButton) return;
+                const image = reportState.images[openButton.dataset.openReportImage];
+                if (!image) return;
+                const modal = document.getElementById('report-image-modal');
+                reportModalObjectUrl = URL.createObjectURL(image.blob);
+                document.getElementById('report-image-modal-img').src = reportModalObjectUrl;
+                document.getElementById('report-image-modal-img').alt = image.name || 'Captura ampliada del informe';
+                document.getElementById('report-image-modal-author').textContent = image.author || 'Autor sin indicar';
+                modal.showModal();
+            });
+
+            const modal = document.getElementById('report-image-modal');
+            const closeModal = () => modal.close();
+            document.getElementById('report-image-modal-close').addEventListener('click', closeModal);
+            modal.addEventListener('close', () => {
+                document.getElementById('report-image-modal-img').removeAttribute('src');
+                if (reportModalObjectUrl) URL.revokeObjectURL(reportModalObjectUrl);
+                reportModalObjectUrl = null;
+            });
+            modal.addEventListener('click', event => {
+                if (event.target === modal) closeModal();
+            });
+        }
+
+        function setupReportBlockEvents() {
+            for (let consignaId = 1; consignaId <= 5; consignaId++) {
+                const container = document.getElementById(`blocks-consigna-${consignaId}`);
+                [`author-${consignaId}`, `input-${consignaId}`].forEach(inputId => {
+                    const input = document.getElementById(inputId);
+                    input.addEventListener('input', () => {
+                        reportState.drafts[inputId] = input.value;
+                        scheduleReportSave();
+                    });
+                });
+                container.addEventListener('input', event => {
+                    const postId = event.target.dataset.postId;
+                    if (!postId) return;
+                    const post = (reportState.posts[consignaId] || []).find(item => item.id === postId);
+                    if (post) {
+                        post.text = event.target.textContent;
+                        queueReportPostChange({ ...post, consignaId });
+                        scheduleReportSave();
+                    }
+                });
+                container.addEventListener('click', event => {
+                    const button = event.target.closest('[data-delete-post]');
+                    if (!button) return;
+                    reportState.posts[consignaId] = (reportState.posts[consignaId] || [])
+                        .filter(post => post.id !== button.dataset.deletePost);
+                    queueReportPostChange({ id: button.dataset.deletePost, consignaId }, 'delete');
+                    renderReportBlocks(consignaId);
+                    scheduleReportSave();
+                });
+            }
+        }
+
+        function initializeReport() {
+            setupReportAuthentication();
+        }
+
         function addBlock(consignaId) {
             const inputEl = document.getElementById(`input-${consignaId}`);
             const authorEl = document.getElementById(`author-${consignaId}`);
-            const container = document.getElementById(`blocks-consigna-${consignaId}`);
 
             const text = inputEl.value.trim();
             const author = authorEl.value.trim() || 'Integrante';
             if (!text) return;
 
-            const block = document.createElement('div');
-            block.className = 'p-4 rounded-xl bg-term-bg border border-term-border flex items-start justify-between gap-3 group hover:border-brand-500/50 transition-all';
-            block.innerHTML = `
-                <div class="w-full">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xs font-mono font-bold text-brand-500"><i class="fa-solid fa-user-pen mr-1"></i>${escapeHtml(author)}</span>
-                        <span class="text-[10px] font-mono text-gray-500">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                    </div>
-                    <p class="text-sm text-gray-200 font-sans leading-relaxed outline-none focus:bg-term-card focus:p-2 focus:rounded-lg" contenteditable="true" title="Haz clic para editar">${escapeHtml(text)}</p>
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-gray-600 hover:text-red-400 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
-            `;
-            container.appendChild(block);
+            if (!reportState.posts[consignaId]) reportState.posts[consignaId] = [];
+            reportState.posts[consignaId].push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                consignaId,
+                author,
+                text,
+                createdAt: new Date().toISOString()
+            });
+            queueReportPostChange(reportState.posts[consignaId][reportState.posts[consignaId].length - 1]);
+            renderReportBlocks(consignaId);
             inputEl.value = '';
+            reportState.drafts[inputEl.id] = '';
+            scheduleReportSave();
         }
 
         function handleKeyPress(event, consignaId) {
@@ -629,21 +1288,21 @@
 
         // 3. LOGICA DEL MODO JUEGO
         const gameLevels = [
-            { id: 1, rank: 'Principiante', title: 'Ubicación actual', request: 'Indica la ruta del directorio en el que estás trabajando.', rewardXP: 100 },
-            { id: 2, rank: 'Principiante', title: 'Contenido del directorio', request: 'Muestra los archivos y carpetas disponibles en tu ubicación actual.', rewardXP: 100 },
-            { id: 3, rank: 'Principiante', title: 'Leer un archivo', request: 'Consulta el contenido de README.txt.', rewardXP: 100 },
-            { id: 4, rank: 'Principiante', title: 'Navegación', request: 'Entra en la carpeta documentos.', rewardXP: 100 },
-            { id: 5, rank: 'Principiante', title: 'Regresar al directorio personal', request: 'Vuelve al directorio personal desde la carpeta actual.', rewardXP: 100 },
-            { id: 6, rank: 'Intermedio', title: 'Crear directorios', request: 'Crea un directorio llamado backups en tu directorio personal.', rewardXP: 150 },
-            { id: 7, rank: 'Intermedio', title: 'Crear archivos', request: 'Crea un archivo vacío llamado notas.txt en tu directorio personal.', rewardXP: 150 },
-            { id: 8, rank: 'Intermedio', title: 'Copiar archivos', request: 'Copia README.txt como backups/README.txt.', rewardXP: 150 },
-            { id: 9, rank: 'Intermedio', title: 'Rutas relativas', request: 'Entra en documentos desde tu directorio personal.', rewardXP: 150 },
-            { id: 10, rank: 'Intermedio', title: 'Inspeccionar información', request: 'Lee investigacion.txt desde la carpeta documentos.', rewardXP: 150 },
-            { id: 11, rank: 'Avanzado', title: 'Copia de respaldo', request: 'Regresa al directorio personal, crea backups/operativo y copia README.txt dentro.', rewardXP: 200 },
-            { id: 12, rank: 'Avanzado', title: 'Registrar un evento', request: 'Guarda la línea "Servicio activo" en un archivo llamado incident.log en tu directorio personal.', rewardXP: 200 },
-            { id: 13, rank: 'Avanzado', title: 'Buscar en archivos', request: 'Busca la palabra Linus en documentos/investigacion.txt.', rewardXP: 200 },
-            { id: 14, rank: 'Avanzado', title: 'Permisos de archivos', request: 'Establece los permisos 640 para notas.txt.', rewardXP: 200 },
-            { id: 15, rank: 'Avanzado', title: 'Diagnóstico del sistema', request: 'Comprueba el espacio de disco en formato legible y lista los procesos en ejecución.', rewardXP: 200 }
+            { id: 1, rank: 'Principiante', title: 'Ubicación actual', request: 'Indica la ruta del directorio en el que estás trabajando.', hint: 'Usa el comando que significa “print working directory”: imprime la ruta completa de la carpeta actual.', rewardXP: 100 },
+            { id: 2, rank: 'Principiante', title: 'Contenido del directorio', request: 'Muestra los archivos y carpetas disponibles en tu ubicación actual.', hint: 'El comando para listar el contenido de una carpeta tiene un nombre corto de dos letras. No necesitas indicar una ruta.', rewardXP: 100 },
+            { id: 3, rank: 'Principiante', title: 'Leer un archivo', request: 'Consulta el contenido de README.txt.', hint: 'El comando cat muestra el texto de un archivo. Indica el nombre README.txt después del comando.', rewardXP: 100 },
+            { id: 4, rank: 'Principiante', title: 'Navegación', request: 'Entra en la carpeta documentos.', hint: 'Para cambiar de carpeta se usa cd seguido del nombre de destino: cd nombre_de_carpeta.', rewardXP: 100 },
+            { id: 5, rank: 'Principiante', title: 'Regresar al directorio personal', request: 'Vuelve al directorio personal desde la carpeta actual.', hint: 'El directorio padre se representa con dos puntos. Usa cd seguido de .. para subir un nivel.', rewardXP: 100 },
+            { id: 6, rank: 'Intermedio', title: 'Crear directorios', request: 'Crea un directorio llamado backups en tu directorio personal.', hint: 'mkdir crea carpetas. Asegúrate de estar en el directorio personal y agrega backups como argumento.', rewardXP: 150 },
+            { id: 7, rank: 'Intermedio', title: 'Crear archivos', request: 'Crea un archivo vacío llamado notas.txt en tu directorio personal.', hint: 'touch crea un archivo vacío. Úsalo con el nombre notas.txt desde el directorio personal.', rewardXP: 150 },
+            { id: 8, rank: 'Intermedio', title: 'Copiar archivos', request: 'Copia README.txt como backups/README.txt.', hint: 'cp recibe primero el origen y luego el destino. Usa la ruta relativa backups/README.txt como destino.', rewardXP: 150 },
+            { id: 9, rank: 'Intermedio', title: 'Rutas relativas', request: 'Entra en documentos desde tu directorio personal.', hint: 'Si estás en el directorio personal, basta usar cd documentos; verifica la ruta mostrada en el prompt.', rewardXP: 150 },
+            { id: 10, rank: 'Intermedio', title: 'Inspeccionar información', request: 'Lee investigacion.txt desde la carpeta documentos.', hint: 'Primero entra en documentos con cd documentos y luego lee investigacion.txt con cat.', rewardXP: 150 },
+            { id: 11, rank: 'Avanzado', title: 'Copia de respaldo', request: 'Regresa al directorio personal, crea backups/operativo y copia README.txt dentro.', hint: 'Vuelve con cd .. si estás en documentos. Crea la subcarpeta con mkdir backups/operativo y copia usando cp README.txt backups/operativo/README.txt.', rewardXP: 200 },
+            { id: 12, rank: 'Avanzado', title: 'Registrar un evento', request: 'Guarda la línea "Servicio activo" en un archivo llamado incident.log en tu directorio personal.', hint: 'echo escribe texto y > lo redirige a un archivo. Conserva las comillas del mensaje: echo "Servicio activo" > incident.log.', rewardXP: 200 },
+            { id: 13, rank: 'Avanzado', title: 'Buscar en archivos', request: 'Busca la palabra Linus en documentos/investigacion.txt.', hint: 'grep busca texto dentro de archivos. Desde el directorio personal indica el patrón y luego la ruta: grep Linus documentos/investigacion.txt.', rewardXP: 200 },
+            { id: 14, rank: 'Avanzado', title: 'Permisos de archivos', request: 'Establece los permisos 640 para notas.txt.', hint: 'chmod cambia permisos. El número 640 da lectura y escritura al propietario, lectura al grupo y ningún permiso a otros.', rewardXP: 200 },
+            { id: 15, rank: 'Avanzado', title: 'Diagnóstico del sistema', request: 'Comprueba el espacio de disco en formato legible y lista los procesos en ejecución.', hint: 'Son dos comandos: df -h muestra el espacio con unidades legibles y ps aux lista los procesos. Ejecútalos por separado.', rewardXP: 200 }
         ];
 
         let currentLevelIdx = 0;
@@ -681,6 +1340,13 @@
             renderProgress();
             const input = document.getElementById('game-term-input');
             const status = document.getElementById('quest-status-text');
+            const hintButton = document.getElementById('quest-hint-btn');
+            const hint = document.getElementById('quest-hint');
+            hint.classList.add('hidden');
+            hint.textContent = '';
+            hintButton.classList.remove('hidden');
+            hintButton.setAttribute('aria-expanded', 'false');
+            hintButton.innerHTML = '<i class="fa-regular fa-lightbulb mr-1"></i> Necesito una pista';
             if (currentLevelIdx >= gameLevels.length) {
                 document.getElementById('quest-level-tag').textContent = 'CAMPAÑA COMPLETADA';
                 document.getElementById('quest-title').textContent = 'Dominio de Linux';
@@ -689,12 +1355,14 @@
                 status.textContent = 'Completado';
                 input.disabled = true;
                 input.placeholder = 'Campaña completada';
+                hintButton.classList.add('hidden');
                 return;
             }
             const lvl = gameLevels[currentLevelIdx];
             document.getElementById('quest-level-tag').textContent = `NIVEL ${lvl.id} · ${lvl.rank.toUpperCase()}`;
             document.getElementById('quest-title').textContent = lvl.title;
             document.getElementById('quest-description').textContent = lvl.request;
+            hint.textContent = lvl.hint;
             document.getElementById('quest-reward').innerHTML = `<i class="fa-solid fa-star"></i> +${lvl.rewardXP} XP`;
             status.textContent = missionLocked ? 'Solicitud completada' : 'En progreso';
             input.disabled = missionLocked;
@@ -703,6 +1371,16 @@
                 ? 'Finalizar <i class="fa-solid fa-check ml-2"></i>'
                 : 'Siguiente solicitud <i class="fa-solid fa-arrow-right ml-2"></i>';
         }
+
+        document.getElementById('quest-hint-btn').addEventListener('click', () => {
+            const hint = document.getElementById('quest-hint');
+            const isHidden = hint.classList.toggle('hidden');
+            const button = document.getElementById('quest-hint-btn');
+            button.setAttribute('aria-expanded', String(!isHidden));
+            button.innerHTML = isHidden
+                ? '<i class="fa-regular fa-lightbulb mr-1"></i> Necesito una pista'
+                : '<i class="fa-regular fa-lightbulb mr-1"></i> Ocultar pista';
+        });
 
         function isMissionComplete(command, result) {
             const normalized = command.trim().toLowerCase();
@@ -1011,6 +1689,9 @@
         document.getElementById('mobile-menu-btn').onclick = () => document.getElementById('mobile-menu').classList.toggle('hidden');
 
         window.onload = () => {
+            setupReportBlockEvents();
+            setupReportImageUploads();
+            initializeReport();
             loadMission();
             renderCmds();
             renderQuizQuestion();
