@@ -1027,7 +1027,12 @@
                     setReportSaveStatus('Revisa tu correo y abre el enlace para ingresar al informe.');
                 } catch (error) {
                     console.error('Error al solicitar acceso al informe:', error);
-                    setReportSaveStatus(`No se pudo enviar el enlace: ${error.message}`, true);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    if (/rate limit|too many requests/i.test(errorMessage)) {
+                        setReportSaveStatus('Supabase alcanzó el límite temporal de correos. Espera un rato antes de pedir otro enlace y revisa tu bandeja de entrada y spam.', true);
+                    } else {
+                        setReportSaveStatus(`No se pudo enviar el enlace: ${errorMessage}`, true);
+                    }
                 } finally {
                     button.disabled = false;
                 }
