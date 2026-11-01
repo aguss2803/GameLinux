@@ -35,6 +35,26 @@
         ::-webkit-scrollbar-thumb:hover { background: #484f58; }
         .box-glow { box-shadow: 0 0 25px -5px rgba(34, 197, 94, 0.15); }
         html { scroll-behavior: smooth; }
+        body {
+            background-image:
+                radial-gradient(ellipse at 15% 10%, rgba(34, 197, 94, 0.09), transparent 38%),
+                radial-gradient(ellipse at 85% 35%, rgba(88, 166, 255, 0.07), transparent 36%),
+                linear-gradient(rgba(63, 185, 80, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(63, 185, 80, 0.035) 1px, transparent 1px);
+            background-size: 180% 180%, 160% 160%, 44px 44px, 44px 44px;
+            background-attachment: fixed;
+            animation: linux-ambient 28s ease-in-out infinite alternate;
+        }
+        #tp-section, #game-section, #terminal-section, #distros, #quiz {
+            background-color: rgba(10, 13, 18, 0.94);
+        }
+        @keyframes linux-ambient {
+            from { background-position: 0% 0%, 100% 100%, 0 0, 0 0; }
+            to { background-position: 100% 35%, 0% 65%, 0 0, 0 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            body { animation: none; }
+        }
     </style>
 </head>
 <body class="bg-[#0d1117] text-gray-200 font-sans antialiased selection:bg-brand-500 selection:text-black">
@@ -269,6 +289,28 @@
                             <button onclick="addBlock('4')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all whitespace-nowrap">
                                 <i class="fa-solid fa-plus mr-1"></i> Agregar
                             </button>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="rounded-xl border border-term-border bg-term-bg p-4 text-center">
+                            <label for="image-profile-family" class="mb-2 block text-xs font-mono text-gray-400">Captura de pantalla del Gestor de Software mostrando la página de Perfil - Familia y Estudiantes</label>
+                            <div data-team-only class="hidden">
+                                <input id="image-author-profile-family" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full rounded-lg border border-term-border bg-term-card px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                                <input id="image-profile-family" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                                <button id="publish-image-profile-family" type="button" class="mt-2 hidden rounded-lg bg-brand-600 px-3 py-2 text-xs font-bold text-white hover:bg-brand-500">Publicar captura</button>
+                                <p id="image-upload-status-profile-family" class="mt-2 text-xs text-gray-400" role="status" aria-live="polite"></p>
+                            </div>
+                            <div id="preview-profile-family" class="mt-3 flex min-h-28 items-center justify-center rounded-lg border-2 border-dashed border-term-border text-xs font-mono text-gray-600">Selecciona una imagen</div>
+                        </div>
+                        <div class="rounded-xl border border-term-border bg-term-bg p-4 text-center">
+                            <label for="image-ia-action" class="mb-2 block text-xs font-mono text-gray-400">Captura de pantalla de la aplicación funcionando IA en Acción</label>
+                            <div data-team-only class="hidden">
+                                <input id="image-author-ia-action" type="text" placeholder="Nombre del integrante..." class="mb-2 w-full rounded-lg border border-term-border bg-term-card px-3 py-2 text-xs text-gray-200 outline-none focus:border-brand-500">
+                                <input id="image-ia-action" type="file" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-2 file:py-1 file:font-semibold file:text-white hover:file:bg-brand-500">
+                                <button id="publish-image-ia-action" type="button" class="mt-2 hidden rounded-lg bg-brand-600 px-3 py-2 text-xs font-bold text-white hover:bg-brand-500">Publicar captura</button>
+                                <p id="image-upload-status-ia-action" class="mt-2 text-xs text-gray-400" role="status" aria-live="polite"></p>
+                            </div>
+                            <div id="preview-ia-action" class="mt-3 flex min-h-28 items-center justify-center rounded-lg border-2 border-dashed border-term-border text-xs font-mono text-gray-600">Selecciona una imagen</div>
                         </div>
                     </div>
                 </div>
@@ -551,12 +593,14 @@
         const reportSupabaseUrl = 'https://whzuzmqrnqafivbalega.supabase.co';
         const reportSupabasePublicKey = 'sb_publishable_mgjsqgwl9KluWOz7HZ9lbA_q8mXvtD7';
         const reportBucketName = 'report-images';
-        const reportImageIds = ['ubuntu', 'monitor', 'before', 'after'];
+        const reportImageIds = ['ubuntu', 'monitor', 'before', 'after', 'profile-family', 'ia-action'];
         const reportImageOwnerInputs = {
             ubuntu: 'image-author-ubuntu',
             monitor: 'image-author-monitor',
             before: 'image-author-before',
-            after: 'image-author-after'
+            after: 'image-author-after',
+            'profile-family': 'image-author-profile-family',
+            'ia-action': 'image-author-ia-action'
         };
         const reportState = { posts: {}, images: {}, drafts: {} };
         let reportSaveTimer;
@@ -1848,7 +1892,7 @@
         }
 
         function answerQuiz(selectedIndex) {
-            if (quizAnswered) return;
+        if (quizAnswered) return;
             quizAnswered = true;
             const question = quizQuestions[quizIndex];
             const optionButtons = document.querySelectorAll('#quiz-options button');

@@ -19,13 +19,19 @@ create table if not exists public.report_posts (
 );
 
 create table if not exists public.report_images (
-    image_id text primary key check (image_id in ('ubuntu', 'monitor', 'before', 'after')),
+    image_id text primary key,
     path text not null unique,
     name text not null,
     author text not null,
     created_at timestamptz not null,
     updated_at timestamptz not null default now()
 );
+
+alter table public.report_images
+    drop constraint if exists report_images_image_id_check;
+alter table public.report_images
+    add constraint report_images_image_id_check
+    check (image_id in ('ubuntu', 'monitor', 'before', 'after', 'profile-family', 'ia-action'));
 
 alter table public.team_members enable row level security;
 alter table public.report_posts enable row level security;
