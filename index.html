@@ -361,7 +361,7 @@
                 </div>
                 <div class="bg-term-card border border-term-border p-3.5 rounded-2xl flex items-center gap-4">
                     <div>
-                        <div class="text-xs text-gray-400 font-mono"><span id="game-xp">0 XP</span> / <span id="game-progress-count">0/15 solicitudes</span></div>
+                        <div class="text-xs text-gray-400 font-mono"><span id="game-xp">0 XP</span> / <span id="game-progress-count">0/22 niveles</span></div>
                         <div id="game-rank" class="text-xs font-mono text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20 mt-1 inline-block">Principiante</div>
                     </div>
                 </div>
@@ -406,7 +406,7 @@
 
     <!-- MODAL DE NIVEL COMPLETADO -->
     <div id="level-success-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-term-card border border-brand-500/50 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative">
+        <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-brand-500/50 bg-term-card p-6 shadow-2xl relative sm:p-8">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-brand-500/20 text-brand-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3"><i class="fa-solid fa-trophy"></i></div>
@@ -416,8 +416,12 @@
             <div class="text-center text-sm text-gray-300">
                 <p id="modal-next-rank">Solicitud completada.</p>
             </div>
+            <div class="mt-6 rounded-xl border border-term-cyan/30 bg-term-cyan/5 p-4 text-left">
+                <h4 id="modal-learning-title" class="mb-2 font-semibold text-term-cyan">Un dato sobre Linux</h4>
+                <p id="modal-learning-content" class="text-sm leading-relaxed text-gray-300"></p>
+            </div>
             <div class="mt-6 flex justify-end">
-                <button id="modal-next-level-btn" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all">Siguiente solicitud <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                <button id="modal-next-level-btn" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all">Siguiente nivel <i class="fa-solid fa-arrow-right ml-2"></i></button>
             </div>
         </div>
     </div>
@@ -1505,18 +1509,26 @@
                     const makeParents = args[0] === '-p';
                     const targetPath = args[makeParents ? 1 : 0];
                     const target = targetPath && resolveEntry(targetPath, currentFS, pathArr);
-                    if (!target || (!makeParents && target.entry)) {
+                    if (!targetPath || (!makeParents && (!target || target.entry))) {
                         output = `mkdir: no se pudo crear ${targetPath || ''}`;
                         isError = true;
                     } else {
                         const segments = targetPath.replace(/^~\/?/, '').replace(/^\/home\/estudiante\/?/, '').replace(/^\//, '').split('/').filter(Boolean);
                         let directory = targetPath.startsWith('/') || targetPath.startsWith('~') ? currentFS : dir;
-                        for (const segment of segments.slice(0, -1)) {
-                            if (!directory[segment]) directory[segment] = { type: 'dir', children: {} };
-                            if (directory[segment].type !== 'dir') { isError = true; break; }
-                            directory = directory[segment].children;
+                        if (makeParents) {
+                            for (const segment of segments) {
+                                if (!directory[segment]) directory[segment] = { type: 'dir', children: {} };
+                                if (directory[segment].type !== 'dir') { isError = true; break; }
+                                directory = directory[segment].children;
+                            }
+                        } else {
+                            for (const segment of segments.slice(0, -1)) {
+                                if (!directory[segment]) directory[segment] = { type: 'dir', children: {} };
+                                if (directory[segment].type !== 'dir') { isError = true; break; }
+                                directory = directory[segment].children;
+                            }
+                            if (!isError) directory[segments[segments.length - 1]] = { type: 'dir', children: {} };
                         }
-                        if (!isError) directory[segments[segments.length - 1]] = { type: 'dir', children: {} };
                     }
                     break;
                 }
@@ -1551,11 +1563,47 @@
                     } else target.entry.permissions = args[0];
                     break;
                 }
+                case 'find': {
+                    if (args.length !== 3 || args[1] !== '-name' || args[0] !== '.') {
+                        output = 'Uso simulado: find . -name nombre_de_archivo';
+                        isError = true;
+                        break;
+                    }
+                    const matches = [];
+                    const searchDirectory = (directory, path) => {
+                        Object.entries(directory).forEach(([name, entry]) => {
+                            const entryPath = `${path}/${name}`;
+                            if (entry.type === 'dir') searchDirectory(entry.children, entryPath);
+                            else if (name === args[2]) matches.push(entryPath);
+                        });
+                    };
+                    searchDirectory(dir, '.');
+                    output = matches.join('\n') || 'find: no se encontraron coincidencias';
+                    if (!matches.length) isError = true;
+                    break;
+                }
                 case 'df':
                     output = args[0] === '-h' ? 'Filesystem  Size  Used Avail Use% Mounted on\n/dev/sim  40G   12G   28G  30% /' : 'Usa df -h para ver el espacio.';
                     break;
                 case 'ps':
                     output = args[0] === 'aux' ? 'USER PID %CPU %MEM COMMAND\nroot 1 0.0 0.1 systemd\nestudiante 42 0.1 0.2 bash' : 'Usa ps aux para listar procesos.';
+                    break;
+                case 'top':
+                    output = 'Simulación de procesos (no corresponde al sistema real)\nPID  USUARIO      PROCESO\n1    root         systemd\n42   estudiante   bash';
+                    break;
+                case 'uname':
+                    output = args[0] === '-r' ? '6.8.0-linux-quest-simulado' : 'Usa uname -r para consultar la versión simulada del kernel.';
+                    break;
+                case 'apt':
+                    if (args[0] === 'update') output = 'Simulación: lista de paquetes consultada. No se modificó el sistema.';
+                    else if (args[0] === 'install' && args[1] === 'nano') {
+                        simulatedPackages.add('nano');
+                        output = 'Simulación: nano quedaría instalado. No se modificó el sistema.';
+                    }
+                    else {
+                        output = 'En este Quest solo se simulan apt update y apt install nano.';
+                        isError = true;
+                    }
                     break;
                 case 'clear': output = "__CLEAR__"; break;
                 default: output = `${cmd}: orden no encontrada.`; isError = true; break;
@@ -1565,21 +1613,28 @@
 
         // 3. LOGICA DEL MODO JUEGO
         const gameLevels = [
-            { id: 1, rank: 'Principiante', title: 'Ubicación actual', request: 'Indica la ruta del directorio en el que estás trabajando.', hint: 'Usa el comando que significa “print working directory”: imprime la ruta completa de la carpeta actual.', rewardXP: 100 },
-            { id: 2, rank: 'Principiante', title: 'Contenido del directorio', request: 'Muestra los archivos y carpetas disponibles en tu ubicación actual.', hint: 'El comando para listar el contenido de una carpeta tiene un nombre corto de dos letras. No necesitas indicar una ruta.', rewardXP: 100 },
-            { id: 3, rank: 'Principiante', title: 'Leer un archivo', request: 'Consulta el contenido de README.txt.', hint: 'El comando cat muestra el texto de un archivo. Indica el nombre README.txt después del comando.', rewardXP: 100 },
-            { id: 4, rank: 'Principiante', title: 'Navegación', request: 'Entra en la carpeta documentos.', hint: 'Para cambiar de carpeta se usa cd seguido del nombre de destino: cd nombre_de_carpeta.', rewardXP: 100 },
-            { id: 5, rank: 'Principiante', title: 'Regresar al directorio personal', request: 'Vuelve al directorio personal desde la carpeta actual.', hint: 'El directorio padre se representa con dos puntos. Usa cd seguido de .. para subir un nivel.', rewardXP: 100 },
-            { id: 6, rank: 'Intermedio', title: 'Crear directorios', request: 'Crea un directorio llamado backups en tu directorio personal.', hint: 'mkdir crea carpetas. Asegúrate de estar en el directorio personal y agrega backups como argumento.', rewardXP: 150 },
-            { id: 7, rank: 'Intermedio', title: 'Crear archivos', request: 'Crea un archivo vacío llamado notas.txt en tu directorio personal.', hint: 'touch crea un archivo vacío. Úsalo con el nombre notas.txt desde el directorio personal.', rewardXP: 150 },
-            { id: 8, rank: 'Intermedio', title: 'Copiar archivos', request: 'Copia README.txt como backups/README.txt.', hint: 'cp recibe primero el origen y luego el destino. Usa la ruta relativa backups/README.txt como destino.', rewardXP: 150 },
-            { id: 9, rank: 'Intermedio', title: 'Rutas relativas', request: 'Entra en documentos desde tu directorio personal.', hint: 'Si estás en el directorio personal, basta usar cd documentos; verifica la ruta mostrada en el prompt.', rewardXP: 150 },
-            { id: 10, rank: 'Intermedio', title: 'Inspeccionar información', request: 'Lee investigacion.txt desde la carpeta documentos.', hint: 'Primero entra en documentos con cd documentos y luego lee investigacion.txt con cat.', rewardXP: 150 },
-            { id: 11, rank: 'Avanzado', title: 'Copia de respaldo', request: 'Regresa al directorio personal, crea backups/operativo y copia README.txt dentro.', hint: 'Vuelve con cd .. si estás en documentos. Crea la subcarpeta con mkdir backups/operativo y copia usando cp README.txt backups/operativo/README.txt.', rewardXP: 200 },
-            { id: 12, rank: 'Avanzado', title: 'Registrar un evento', request: 'Guarda la línea "Servicio activo" en un archivo llamado incident.log en tu directorio personal.', hint: 'echo escribe texto y > lo redirige a un archivo. Conserva las comillas del mensaje: echo "Servicio activo" > incident.log.', rewardXP: 200 },
-            { id: 13, rank: 'Avanzado', title: 'Buscar en archivos', request: 'Busca la palabra Linus en documentos/investigacion.txt.', hint: 'grep busca texto dentro de archivos. Desde el directorio personal indica el patrón y luego la ruta: grep Linus documentos/investigacion.txt.', rewardXP: 200 },
-            { id: 14, rank: 'Avanzado', title: 'Permisos de archivos', request: 'Establece los permisos 640 para notas.txt.', hint: 'chmod cambia permisos. El número 640 da lectura y escritura al propietario, lectura al grupo y ningún permiso a otros.', rewardXP: 200 },
-            { id: 15, rank: 'Avanzado', title: 'Diagnóstico del sistema', request: 'Comprueba el espacio de disco en formato legible y lista los procesos en ejecución.', hint: 'Son dos comandos: df -h muestra el espacio con unidades legibles y ps aux lista los procesos. Ejecútalos por separado.', rewardXP: 200 }
+            { id: 1, rank: 'Principiante', title: 'Ubicación actual', request: 'Indica la ruta del directorio en el que estás trabajando.', hint: 'Usa el comando que significa “print working directory”: imprime la ruta completa de la carpeta actual.', rewardXP: 100, lessonTitle: 'La terminal y el sistema', lesson: 'pwd muestra dónde estás dentro del sistema de archivos. Unix, creado en los Laboratorios Bell a partir de 1969, popularizó muchas de las ideas y herramientas de terminal que siguen presentes en Linux.' },
+            { id: 2, rank: 'Principiante', title: 'Contenido del directorio', request: 'Muestra los archivos y carpetas disponibles en tu ubicación actual.', hint: 'El comando para listar el contenido de una carpeta tiene un nombre corto de dos letras. No necesitas indicar una ruta.', rewardXP: 100, lessonTitle: 'Archivos a la vista', lesson: 'ls permite inspeccionar un directorio sin abrir cada archivo. La filosofía de Unix favorece herramientas pequeñas que hacen bien una tarea y pueden combinarse.' },
+            { id: 3, rank: 'Principiante', title: 'Leer un archivo', request: 'Consulta el contenido de README.txt.', hint: 'El comando cat muestra el texto de un archivo. Indica el nombre README.txt después del comando.', rewardXP: 100, lessonTitle: 'Un nombre con historia', lesson: 'cat viene de “concatenate”: además de mostrar archivos, puede unir su contenido. Las utilidades clásicas de Unix inspiraron el conjunto de comandos disponible en GNU/Linux.' },
+            { id: 4, rank: 'Principiante', title: 'Navegación', request: 'Entra en la carpeta documentos.', hint: 'Para cambiar de carpeta se usa cd seguido del nombre de destino: cd nombre_de_carpeta.', rewardXP: 100, lessonTitle: 'Un árbol de directorios', lesson: 'cd cambia el directorio de trabajo de la shell. Linux organiza archivos como un árbol que parte de /, una convención heredada de Unix.' },
+            { id: 5, rank: 'Principiante', title: 'Regresar al directorio personal', request: 'Vuelve al directorio personal desde la carpeta actual.', hint: 'El directorio padre se representa con dos puntos. Usa cd seguido de .. para subir un nivel.', rewardXP: 100, lessonTitle: 'Rutas relativas', lesson: 'El nombre .. representa el directorio padre y . el directorio actual. Estas convenciones hacen posible moverse por el árbol sin escribir rutas completas.' },
+            { id: 6, rank: 'Intermedio', title: 'Crear directorios', request: 'Crea un directorio llamado backups en tu directorio personal.', hint: 'mkdir crea carpetas. Asegúrate de estar en el directorio personal y agrega backups como argumento.', rewardXP: 150, lessonTitle: 'Organizar el trabajo', lesson: 'mkdir crea directorios, que ayudan a separar datos y proyectos. En Linux, muchas configuraciones y herramientas también se representan como archivos y carpetas.' },
+            { id: 7, rank: 'Intermedio', title: 'Crear archivos', request: 'Crea un archivo vacío llamado notas.txt en tu directorio personal.', hint: 'touch crea un archivo vacío. Úsalo con el nombre notas.txt desde el directorio personal.', rewardXP: 150, lessonTitle: 'Archivos y marcas de tiempo', lesson: 'touch puede crear un archivo vacío y actualizar sus marcas de tiempo. Los metadatos permiten al sistema y a las herramientas reconocer cambios.' },
+            { id: 8, rank: 'Intermedio', title: 'Copiar archivos', request: 'Copia README.txt como backups/README.txt.', hint: 'cp recibe primero el origen y luego el destino. Usa la ruta relativa backups/README.txt como destino.', rewardXP: 150, lessonTitle: 'Copias de respaldo', lesson: 'cp duplica archivos en otra ubicación. Mantener copias separadas es una práctica básica para proteger información antes de modificarla.' },
+            { id: 9, rank: 'Intermedio', title: 'Rutas relativas', request: 'Entra en documentos desde tu directorio personal.', hint: 'Si estás en el directorio personal, basta usar cd documentos; verifica la ruta mostrada en el prompt.', rewardXP: 150, lessonTitle: 'Menos escritura, misma ruta', lesson: 'Una ruta relativa se interpreta desde el directorio actual; una ruta absoluta parte desde /. Elegir la adecuada facilita automatizar tareas y navegar.' },
+            { id: 10, rank: 'Intermedio', title: 'Inspeccionar información', request: 'Lee investigacion.txt desde la carpeta documentos.', hint: 'Primero entra en documentos con cd documentos y luego lee investigacion.txt con cat.', rewardXP: 150, lessonTitle: 'Linux nace como kernel', lesson: 'En 1991, Linus Torvalds anunció en el grupo comp.os.minix que trabajaba en un sistema operativo libre. El proyecto comenzó como un kernel para computadoras personales.' },
+            { id: 11, rank: 'Avanzado', title: 'Copia de respaldo', request: 'Regresa al directorio personal, crea backups/operativo y copia README.txt dentro.', hint: 'Vuelve con cd .. si estás en documentos. Crea la subcarpeta con mkdir backups/operativo y copia usando cp README.txt backups/operativo/README.txt.', rewardXP: 200, lessonTitle: 'Combinar herramientas', lesson: 'Una tarea cotidiana suele consistir en varios pasos: navegar, crear carpetas y copiar archivos. Dominar cada herramienta pequeña permite resolver flujos más grandes.' },
+            { id: 12, rank: 'Avanzado', title: 'Registrar un evento', request: 'Guarda la línea "Servicio activo" en un archivo llamado incident.log en tu directorio personal.', hint: 'echo escribe texto y > lo redirige a un archivo. Conserva las comillas del mensaje: echo "Servicio activo" > incident.log.', rewardXP: 200, lessonTitle: 'La shell como herramienta', lesson: 'La shell interpreta comandos y puede redirigir su salida con >. Así se crean registros y se conectan herramientas sin necesidad de una interfaz gráfica.' },
+            { id: 13, rank: 'Avanzado', title: 'Buscar en archivos', request: 'Busca la palabra Linus en documentos/investigacion.txt.', hint: 'grep busca texto dentro de archivos. Desde el directorio personal indica el patrón y luego la ruta: grep Linus documentos/investigacion.txt.', rewardXP: 200, lessonTitle: 'Búsqueda de texto', lesson: 'grep busca líneas que coinciden con un patrón. Su nombre proviene de una instrucción del editor ed y esta utilidad se convirtió en una de las herramientas emblemáticas de Unix.' },
+            { id: 14, rank: 'Avanzado', title: 'Permisos de archivos', request: 'Establece los permisos 640 para notas.txt.', hint: 'chmod cambia permisos. El número 640 da lectura y escritura al propietario, lectura al grupo y ningún permiso a otros.', rewardXP: 200, lessonTitle: 'Permisos y cuidado', lesson: 'Linux distingue permisos para propietario, grupo y otros. Aplicar solo los permisos necesarios —principio de mínimo privilegio— ayuda a proteger archivos.' },
+            { id: 15, rank: 'Avanzado', title: 'Diagnóstico del sistema', request: 'Comprueba el espacio de disco en formato legible y lista los procesos en ejecución.', hint: 'Son dos comandos: df -h muestra el espacio con unidades legibles y ps aux lista los procesos. Ejecútalos por separado.', rewardXP: 200, lessonTitle: 'Un sistema de muchas piezas', lesson: 'Linux es el kernel, encargado de recursos como procesos y dispositivos; las distribuciones reúnen el kernel con herramientas, aplicaciones y un gestor de paquetes.' },
+            { id: 16, rank: 'Avanzado', title: 'Encontrar un archivo', request: 'Busca investigacion.txt desde tu directorio personal con find.', hint: 'Usa find . -name investigacion.txt para buscar por nombre debajo del directorio actual.', rewardXP: 200, lessonTitle: 'Buscar en el árbol', lesson: 'find recorre directorios para localizar archivos según criterios. Practicar búsquedas por nombre permite encontrar datos sin recordar su ubicación exacta.' },
+            { id: 17, rank: 'Avanzado', title: 'Consultar el kernel', request: 'Muestra la versión simulada del kernel con uname.', hint: 'El modificador -r solicita la versión de lanzamiento: uname -r.', rewardXP: 200, lessonTitle: 'Kernel y distribución', lesson: 'uname muestra información del sistema. En este Quest la versión es ficticia: en una distribución real, el kernel administra la comunicación entre software y hardware.' },
+            { id: 18, rank: 'Avanzado', title: 'Observar procesos', request: 'Abre la vista simulada de procesos con top.', hint: 'Escribe top. Esta misión muestra una salida de ejemplo y no consulta tu computadora.', rewardXP: 200, lessonTitle: 'Procesos en ejecución', lesson: 'Un proceso es un programa que está ejecutándose. Herramientas como top ayudan a observar procesos y consumo de recursos; aquí los datos son una simulación.' },
+            { id: 19, rank: 'Avanzado', title: 'Permisos privados', request: 'Configura notas.txt con permisos 600.', hint: 'Usa chmod 600 notas.txt: el propietario conserva lectura y escritura; grupo y otros no tienen permisos.', rewardXP: 200, lessonTitle: 'Mínimo privilegio', lesson: 'El modo 600 concede lectura y escritura únicamente al propietario. Restringir el acceso reduce exposiciones accidentales de información.' },
+            { id: 20, rank: 'Linux experto', title: 'Actualizar lista de paquetes', request: 'Simula una consulta de actualizaciones con apt update.', hint: 'Ejecuta apt update. En este Quest es una respuesta ficticia y no se conecta a internet ni cambia el equipo.', rewardXP: 250, lessonTitle: 'El proyecto GNU', lesson: 'Richard Stallman anunció el proyecto GNU en 1983 para crear un sistema operativo libre. Sus herramientas forman parte de numerosas distribuciones GNU/Linux.' },
+            { id: 21, rank: 'Linux experto', title: 'Explorar paquetes', request: 'Simula la instalación del editor nano con apt install nano.', hint: 'Escribe apt install nano. El Quest solo muestra una simulación; no instala programas en tu computadora.', rewardXP: 250, lessonTitle: 'Distribuciones y comunidad', lesson: 'Las distribuciones empaquetan software y facilitan su instalación. Debian, iniciado en 1993, es uno de los proyectos comunitarios que influyeron ampliamente en GNU/Linux.' },
+            { id: 22, rank: 'Linux experto', title: 'Reto integrador: respaldo seguro', request: 'Crea proyectos/reporte, copia allí documentos/investigacion.txt y establece permisos 640 en la copia.', hint: 'Completa tres pasos: mkdir -p proyectos/reporte; cp documentos/investigacion.txt proyectos/reporte/investigacion.txt; chmod 640 proyectos/reporte/investigacion.txt.', rewardXP: 300, lessonTitle: 'Un ecosistema libre', lesson: 'El kernel Linux se publicó bajo la licencia GPL en 1992. Junto con las herramientas GNU y el trabajo de comunidades de todo el mundo, dio lugar al ecosistema que hoy impulsa computadoras, servidores y muchos otros dispositivos.' }
         ];
 
         let currentLevelIdx = 0;
@@ -1587,9 +1642,11 @@
         let gameFS = cloneFS(initialFS);
         let gamePath = [];
         let missionLocked = false;
+        const simulatedPackages = new Set();
         const missionSteps = new Set();
 
         function getRank(completedCount) {
+            if (completedCount >= 20) return 'Linux experto';
             if (completedCount >= 15) return 'Linux avanzado';
             if (completedCount >= 10) return 'Avanzado';
             if (completedCount >= 5) return 'Intermedio';
@@ -1609,7 +1666,7 @@
                 return `<div aria-label="Solicitud ${index + 1}: ${index < completedCount ? 'completada' : index === completedCount ? 'actual' : 'bloqueada'}" class="border rounded-lg px-2 py-2 text-center font-mono text-xs ${stateClass}">${stateIcon}</div>`;
             }).join('');
             document.getElementById('game-xp').textContent = `${userXP} XP`;
-            document.getElementById('game-progress-count').textContent = `${completedCount}/15 solicitudes`;
+            document.getElementById('game-progress-count').textContent = `${completedCount}/${gameLevels.length} niveles`;
             document.getElementById('game-rank').textContent = getRank(completedCount);
         }
 
@@ -1627,8 +1684,8 @@
             if (currentLevelIdx >= gameLevels.length) {
                 document.getElementById('quest-level-tag').textContent = 'CAMPAÑA COMPLETADA';
                 document.getElementById('quest-title').textContent = 'Dominio de Linux';
-                document.getElementById('quest-description').textContent = 'Completaste las 15 solicitudes y alcanzaste el nivel avanzado.';
-                document.getElementById('quest-reward').textContent = '15/15 solicitudes';
+                document.getElementById('quest-description').textContent = `Completaste los ${gameLevels.length} niveles y alcanzaste el rango ${getRank(gameLevels.length)}.`;
+                document.getElementById('quest-reward').textContent = `${gameLevels.length}/${gameLevels.length} niveles`;
                 status.textContent = 'Completado';
                 input.disabled = true;
                 input.placeholder = 'Campaña completada';
@@ -1681,6 +1738,25 @@
                     if (normalized === 'df -h' && result.output.includes('Filesystem')) missionSteps.add('disk');
                     if (normalized === 'ps aux' && result.output.includes('systemd')) missionSteps.add('processes');
                     return missionSteps.has('disk') && missionSteps.has('processes');
+                case 15: return normalized === 'find . -name investigacion.txt' && result.output.includes('./documentos/investigacion.txt');
+                case 16: return normalized === 'uname -r' && result.output.includes('linux-quest-simulado');
+                case 17: return normalized === 'top' && result.output.includes('Simulación de procesos');
+                case 18: return normalized === 'chmod 600 notas.txt' && gameFS['notas.txt']?.permissions === '600';
+                case 19: return normalized === 'apt update' && result.output.includes('Simulación');
+                case 20: return normalized === 'apt install nano' && simulatedPackages.has('nano');
+                case 21:
+                    if (normalized === 'mkdir -p proyectos/reporte' && gameFS.proyectos?.children?.reporte?.type === 'dir') missionSteps.add('project-directory');
+                    if (normalized === 'cp documentos/investigacion.txt proyectos/reporte/investigacion.txt'
+                        && gameFS.proyectos?.children?.reporte?.children?.['investigacion.txt']?.content === initialFS.documentos.children['investigacion.txt'].content) {
+                        missionSteps.add('project-copy');
+                    }
+                    if (normalized === 'chmod 640 proyectos/reporte/investigacion.txt'
+                        && gameFS.proyectos?.children?.reporte?.children?.['investigacion.txt']?.permissions === '640') {
+                        missionSteps.add('project-permissions');
+                    }
+                    return missionSteps.has('project-directory')
+                        && missionSteps.has('project-copy')
+                        && missionSteps.has('project-permissions');
                 default: return false;
             }
         }
@@ -1720,11 +1796,13 @@
                     document.getElementById('quest-status-text').textContent = 'Solicitud completada';
                     document.getElementById('modal-level-title').textContent = '¡Respuesta correcta!';
                     document.getElementById('modal-xp-earned').textContent = `+${lvl.rewardXP} XP`;
-                    document.getElementById('modal-next-rank').textContent = currentLevelIdx === 14
-                        ? 'Has completado todas las solicitudes y alcanzado el nivel avanzado.'
+                    document.getElementById('modal-next-rank').textContent = currentLevelIdx === gameLevels.length - 1
+                        ? 'Has completado todos los niveles del Quest.'
                         : getRank(currentLevelIdx + 1) !== getRank(currentLevelIdx)
                             ? `Nuevo rango: ${getRank(currentLevelIdx + 1)}.`
                             : 'Solicitud completada. Continúa con la siguiente.';
+                    document.getElementById('modal-learning-title').textContent = lvl.lessonTitle;
+                    document.getElementById('modal-learning-content').textContent = lvl.lesson;
                     const successLine = document.createElement('div');
                     successLine.className = 'text-brand-500 font-bold';
                     successLine.textContent = 'Solicitud completada.';
@@ -1749,6 +1827,7 @@
             gameFS = cloneFS(initialFS);
             gamePath = [];
             missionLocked = false;
+            simulatedPackages.clear();
             missionSteps.clear();
             gameTermBody.innerHTML = '';
             document.getElementById('level-success-modal').classList.add('hidden');
